@@ -1,4 +1,5 @@
 #include "guistate.h"
+#include "version.h"
 
 #include <notcurses/notcurses.h>
 
@@ -9,6 +10,12 @@
 
 int main(int argc, char** argv)
 {
+    if (argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
+    {
+        std::cout << "vircon-server v" << VIRCON_SERVER_VERSION << " © 2024 by RMZeroFour\n";
+        return 0;
+    }
+
     setlocale(LC_ALL, "");
 
     notcurses_options opts{};

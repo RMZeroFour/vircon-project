@@ -8,8 +8,11 @@ find_package(NotcursesCore REQUIRED)
 include(CreateNotcursesCoreTarget)
 CreateNotcursesCoreTarget()
 
+configure_file(version.h.in version.h @ONLY)
+
 add_executable(vircon-server)
 target_sources(vircon-server PRIVATE main.cpp guistate.cpp)
+target_include_directories(vircon-server PRIVATE "${PROJECT_BINARY_DIR}")
 target_link_libraries(vircon-server PRIVATE Notcurses::NotcursesCore)
 
 install(TARGETS vircon-server)

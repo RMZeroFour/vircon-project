@@ -1,0 +1,1 @@
+#define VIRCON_SERVER_VERSION "@vircon_VERSION_MAJOR@.@vircon_VERSION_MINOR@.@vircon_VERSION_PATCH@"
