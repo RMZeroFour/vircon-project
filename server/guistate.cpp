@@ -10,6 +10,19 @@ ncplane* create_plane(ncplane* parent, unsigned int rows, unsigned int cols)
     };
     return ncplane_create(parent, &opts);
 }
+
+void draw_qrcode(ncplane* plane, int y, ncalign_e align, const char* data)
+{
+    unsigned int qr_width{ 64 }, qr_height{ 64 };
+    ncplane* qr_plane{ create_plane(plane, qr_height, qr_width ) };
+
+    ncplane_qrcode(qr_plane, &qr_height, &qr_width, data, strlen(data));
+
+    ncplane_move_yx(qr_plane, y, ncplane_halign(plane, align, qr_width));
+    ncplane_mergedown_simple(qr_plane, plane);
+    
+    ncplane_destroy(qr_plane);
+}
 }
 
 GuiState::GuiState(notcurses* nc)
@@ -17,6 +30,11 @@ GuiState::GuiState(notcurses* nc)
     , _title_plane{ create_plane(_std_plane, 1, 1) }
     , _menu_plane{ create_plane(_std_plane, 1, 1) }
     , _info_plane{ create_plane(_std_plane, 1, 1) }
+    , _menu_index{ 0 }
+    , _menu_scroll{ 0 }
+    , _menu_items{ "Server Info", "Add Controller" }
+    , _enabled_controllers{ 0 }
+    , _connected_controllers{ 0 }
 { }
 
 GuiState::~GuiState()
@@ -45,7 +63,15 @@ void GuiState::size_and_place()
 
 void GuiState::handle_input(char32_t key, ncinput input)
 {
-    
+    switch (key)
+    {
+    case NCKEY_UP:
+        _menu_index = (_menu_index == 0) ? _menu_items.size() - 1 : _menu_index - 1;
+        break;
+    case NCKEY_DOWN:
+        _menu_index = (_menu_index == _menu_items.size() - 1) ? 0 : _menu_index + 1;
+        break;
+    }
 }
 
 void GuiState::render()
@@ -103,10 +129,28 @@ void GuiState::render_title()
 
 void GuiState::render_menu()
 {
+    ncplane_erase(_menu_plane);
     
+    for (size_t i{ 0 }; i < _menu_items.size(); ++i)
+    {
+        ncplane_printf_aligned(_menu_plane, i * 2 + 1, NCALIGN_LEFT, 
+            i == _menu_index ? " > %s" : "   %s", _menu_items[i].c_str());
+    }
 }
 
 void GuiState::render_info()
 {
-    
+    ncplane_erase(_info_plane);
+
+    if (_menu_index == 0)
+    {
+        // placeholders
+        ncplane_printf_aligned(_info_plane, 1, NCALIGN_CENTER, "Connected: %d/%d", _connected_controllers, _enabled_controllers);
+        ncplane_printf_aligned(_info_plane, 3, NCALIGN_CENTER, "ws://255.255.255.255:8000");
+        draw_qrcode(_info_plane, 4, NCALIGN_CENTER, "FFFFFFFFFFFF");
+    }
+    else if (_menu_index == _menu_items.size() - 1)
+    {
+        ncplane_printf_aligned(_info_plane, 1, NCALIGN_CENTER, "Add Controller #%d?", _enabled_controllers + 1);
+    }
 }

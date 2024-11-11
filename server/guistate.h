@@ -2,6 +2,9 @@
 
 #include <notcurses/notcurses.h>
 
+#include <string>
+#include <vector>
+
 class GuiState
 {
 public:
@@ -24,4 +27,11 @@ private:
     ncplane* _title_plane;
     ncplane* _menu_plane;
     ncplane* _info_plane;
+
+    int _menu_index;
+    int _menu_scroll;
+    std::vector<std::string> _menu_items;
+
+    int _enabled_controllers;
+    int _connected_controllers;
 };
