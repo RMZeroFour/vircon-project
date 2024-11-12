@@ -1,4 +1,5 @@
 #include "guistate.h"
+#include "serverstate.h"
 #include "version.h"
 
 #include <notcurses/notcurses.h>
@@ -21,7 +22,9 @@ int main(int argc, char** argv)
     notcurses_options opts{};
     notcurses* nc{ notcurses_core_init(&opts, stdout) };
 
-    GuiState gui{ nc };
+    ServerState server{};
+
+    GuiState gui{ nc, server };
     gui.size_and_place();
     gui.render();
 

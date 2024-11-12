@@ -25,8 +25,9 @@ void draw_qrcode(ncplane* plane, int y, ncalign_e align, const char* data)
 }
 }
 
-GuiState::GuiState(notcurses* nc)
-    : _std_plane{ notcurses_stdplane(nc) }
+GuiState::GuiState(notcurses* nc, ServerState& server)
+    : _server{ server }
+    , _std_plane{ notcurses_stdplane(nc) }
     , _title_plane{ create_plane(_std_plane, 1, 1) }
     , _menu_plane{ create_plane(_std_plane, 1, 1) }
     , _info_plane{ create_plane(_std_plane, 1, 1) }
@@ -70,6 +71,16 @@ void GuiState::handle_input(char32_t key, ncinput input)
         break;
     case NCKEY_DOWN:
         _menu_index = (_menu_index == _menu_items.size() - 1) ? 0 : _menu_index + 1;
+        break;
+    case NCKEY_ENTER:
+        if (_menu_index == _menu_items.size() - 1)
+        {
+            ++_enabled_controllers;
+
+            std::string controller_id{ std::to_string(_enabled_controllers) };
+            _menu_items.insert(_menu_items.end() - 1, "Controller #" + controller_id);
+            _server.new_gamepad("vircon Virtual Controller #" + controller_id);
+        }
         break;
     }
 }

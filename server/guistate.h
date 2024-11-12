@@ -1,5 +1,7 @@
 #pragma once
 
+#include "serverstate.h"
+
 #include <notcurses/notcurses.h>
 
 #include <string>
@@ -8,7 +10,7 @@
 class GuiState
 {
 public:
-    GuiState(notcurses* nc);
+    GuiState(notcurses* nc, ServerState& server);
     ~GuiState();
 
 public:
@@ -23,6 +25,8 @@ private:
     void render_info();
 
 private:
+    ServerState& _server;
+
     ncplane* _std_plane;
     ncplane* _title_plane;
     ncplane* _menu_plane;
