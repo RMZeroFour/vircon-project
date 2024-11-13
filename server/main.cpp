@@ -5,9 +5,22 @@
 #include <notcurses/notcurses.h>
 
 #include <locale.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <iostream>
+
+void add_milliseconds(const timespec& source, timespec& target, int delay_ms)
+{
+    target.tv_sec = source.tv_sec;
+    target.tv_nsec = source.tv_nsec + 1'000'000 * delay_ms;
+    
+    while (target.tv_nsec >= 1'000'000'000)
+    {
+        target.tv_nsec -= 1'000'000'000;
+        ++target.tv_sec;
+    }
+}
 
 int main(int argc, char** argv)
 {
@@ -29,12 +42,18 @@ int main(int argc, char** argv)
     gui.render();
 
     notcurses_render(nc);
+
+    const int timeout_ms{ 250 };
+    timespec now{}, deadline{};
     
     char32_t key{};
     ncinput input{};
     while (true)
     {
-        key = notcurses_get_blocking(nc, &input);
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        add_milliseconds(now, deadline, timeout_ms);
+        
+        key = notcurses_get(nc, &deadline, &input);
         if (key == (char32_t)-1)
             break;
 
