@@ -11,7 +11,7 @@ public:
     ServerState();
 
 public:
-    size_t new_gamepad(const std::string& name);
+    size_t new_gamepad();
 
 private:
     std::vector<Gamepad> _gamepads;

@@ -77,9 +77,8 @@ void GuiState::handle_input(char32_t key, ncinput input)
         {
             ++_enabled_controllers;
 
-            std::string controller_id{ std::to_string(_enabled_controllers) };
-            _menu_items.insert(_menu_items.end() - 1, "Controller #" + controller_id);
-            _server.new_gamepad("vircon Virtual Controller #" + controller_id);
+            _menu_items.insert(_menu_items.end() - 1, "Controller #" + std::to_string(_enabled_controllers));
+            _server.new_gamepad();
         }
         break;
     }

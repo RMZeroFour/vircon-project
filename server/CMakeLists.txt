@@ -12,6 +12,7 @@ CreateNotcursesCoreTarget()
 configure_file(version.h.in version.h @ONLY)
 
 add_executable(vircon-server)
+target_compile_features(vircon-server PRIVATE cxx_std_20)
 target_sources(vircon-server PRIVATE main.cpp gamepad.cpp serverstate.cpp guistate.cpp)
 target_include_directories(vircon-server PRIVATE "${PROJECT_BINARY_DIR}")
 target_link_libraries(vircon-server PRIVATE Notcurses::NotcursesCore libevdev::libevdev)

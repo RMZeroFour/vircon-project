@@ -4,8 +4,8 @@ ServerState::ServerState()
     : _gamepads{}
 {}
 
-size_t ServerState::new_gamepad(const std::string& name)
+size_t ServerState::new_gamepad()
 {
-    _gamepads.emplace_back(name);
+    _gamepads.emplace_back();
     return _gamepads.size() - 1;
 }

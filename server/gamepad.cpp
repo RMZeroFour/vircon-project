@@ -2,27 +2,32 @@
 
 namespace
 {
-libevdev_uinput* create_gamepad_device(const std::string& name)
+libevdev_uinput* create_gamepad_device()
 {
-    libevdev* device = libevdev_new();
+    const char* device_name{ "vircon Virtual Controller" };
 
-    libevdev_set_name(device, name.c_str());
-    
+    libevdev* device = libevdev_new();
+    libevdev_set_name(device, device_name);
+    libevdev_set_id_product(device, 0);
+	libevdev_set_id_vendor(device, 0);
+	libevdev_set_id_version(device, 1);
+	libevdev_set_id_bustype(device, BUS_VIRTUAL);
+
     libevdev_enable_event_type(device, EV_KEY);
-    libevdev_enable_event_code(device, EV_KEY, BTN_X, nullptr); // X
     libevdev_enable_event_code(device, EV_KEY, BTN_A, nullptr); // A
-    libevdev_enable_event_code(device, EV_KEY, BTN_Y, nullptr); // Y
     libevdev_enable_event_code(device, EV_KEY, BTN_B, nullptr); // B
+    libevdev_enable_event_code(device, EV_KEY, BTN_X, nullptr); // X
+    libevdev_enable_event_code(device, EV_KEY, BTN_Y, nullptr); // Y
     libevdev_enable_event_code(device, EV_KEY, BTN_TL, nullptr); // L1
     libevdev_enable_event_code(device, EV_KEY, BTN_TR, nullptr); // R1
     libevdev_enable_event_code(device, EV_KEY, BTN_TL2, nullptr); // L2
     libevdev_enable_event_code(device, EV_KEY, BTN_TR2, nullptr); // R2
-    libevdev_enable_event_code(device, EV_KEY, BTN_SELECT, nullptr); // SELECT
-    libevdev_enable_event_code(device, EV_KEY, BTN_START, nullptr); // START
     libevdev_enable_event_code(device, EV_KEY, BTN_DPAD_UP, nullptr); // UP
     libevdev_enable_event_code(device, EV_KEY, BTN_DPAD_DOWN, nullptr); // DOWN
     libevdev_enable_event_code(device, EV_KEY, BTN_DPAD_LEFT, nullptr); // LEFT
     libevdev_enable_event_code(device, EV_KEY, BTN_DPAD_RIGHT, nullptr); // RIGHT
+    libevdev_enable_event_code(device, EV_KEY, BTN_SELECT, nullptr); // SELECT
+    libevdev_enable_event_code(device, EV_KEY, BTN_START, nullptr); // START
 
     input_absinfo axis_info{
         .minimum = -32768,
@@ -34,16 +39,39 @@ libevdev_uinput* create_gamepad_device(const std::string& name)
     libevdev_enable_event_code(device, EV_ABS, ABS_RX, &axis_info); // ANALOG RX
     libevdev_enable_event_code(device, EV_ABS, ABS_RY, &axis_info); // ANALOG RY
 
-    libevdev_uinput* joystick_device = nullptr;
-    libevdev_uinput_create_from_device(device, LIBEVDEV_UINPUT_OPEN_MANAGED, &joystick_device);
+    libevdev_uinput* uinput = nullptr;
+    libevdev_uinput_create_from_device(device, LIBEVDEV_UINPUT_OPEN_MANAGED, &uinput);
 
     libevdev_free(device);
 
-    return joystick_device;
+    return uinput;
 }
 }
 
-Gamepad::Gamepad(const std::string& name)
-    : _input_device{ create_gamepad_device(name), &libevdev_uinput_destroy }
+Gamepad::Gamepad()
+    : _input_device{ create_gamepad_device(), &libevdev_uinput_destroy }
+{ }
+
+void Gamepad::send_input(const Snapshot& ss)
 {
+    libevdev_uinput* uinput{ _input_device.get() };
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_A, ss.a ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_B, ss.b ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_X, ss.x ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_Y, ss.y ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TL, ss.l1 ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TR, ss.r1 ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TL2, ss.l2 ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TR2, ss.r2 ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_UP, ss.up ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_DOWN, ss.down ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_LEFT, ss.left ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_RIGHT, ss.right ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_SELECT, ss.select ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_START, ss.start ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_ABS, ABS_X, ss.lx);
+    libevdev_uinput_write_event(uinput, EV_ABS, ABS_Y, ss.ly);
+    libevdev_uinput_write_event(uinput, EV_ABS, ABS_RX, ss.rx);
+    libevdev_uinput_write_event(uinput, EV_ABS, ABS_RY, ss.ry);
+    libevdev_uinput_write_event(uinput, EV_SYN, SYN_REPORT, 0);
 }
