@@ -12,14 +12,9 @@
 
 void add_milliseconds(const timespec& source, timespec& target, int delay_ms)
 {
-    target.tv_sec = source.tv_sec;
     target.tv_nsec = source.tv_nsec + 1'000'000 * delay_ms;
-    
-    while (target.tv_nsec >= 1'000'000'000)
-    {
-        target.tv_nsec -= 1'000'000'000;
-        ++target.tv_sec;
-    }
+    target.tv_sec = source.tv_sec + target.tv_nsec / 1'000'000'000;
+    target.tv_nsec %= 1'000'000'000;
 }
 
 int main(int argc, char** argv)
