@@ -32,10 +32,7 @@ GuiState::GuiState(notcurses* nc, ServerState& server)
     , _menu_plane{ create_plane(_std_plane, 1, 1) }
     , _info_plane{ create_plane(_std_plane, 1, 1) }
     , _menu_index{ 0 }
-    , _menu_scroll{ 0 }
-    , _menu_items{ "Server Info", "Add Controller" }
-    , _enabled_controllers{ 0 }
-    , _connected_controllers{ 0 }
+    , _submenu_index{ 0 }
 { }
 
 GuiState::~GuiState()
@@ -48,7 +45,7 @@ GuiState::~GuiState()
 void GuiState::size_and_place()
 {
     const unsigned int title_height{ 3 };
-    const unsigned int menu_width{ 20 };
+    const unsigned int menu_width{ 18 };
     
     unsigned int std_width{}, std_height{};
     ncplane_dim_yx(_std_plane, &std_height, &std_width);
@@ -67,18 +64,28 @@ void GuiState::handle_input(char32_t key, ncinput input)
     switch (key)
     {
     case NCKEY_UP:
-        _menu_index = (_menu_index == 0) ? _menu_items.size() - 1 : _menu_index - 1;
+        _menu_index = (_menu_index == 0) ? _server.count() : _menu_index - 1;
         break;
     case NCKEY_DOWN:
-        _menu_index = (_menu_index == _menu_items.size() - 1) ? 0 : _menu_index + 1;
+        _menu_index = (_menu_index == _server.count()) ? 0 : _menu_index + 1;
         break;
-    case NCKEY_ENTER:
-        if (_menu_index == _menu_items.size() - 1)
-        {
-            ++_enabled_controllers;
+    
+    case NCKEY_LEFT:
+    case NCKEY_RIGHT:
+        _submenu_index = 1 - _submenu_index;
+        break;
 
-            _menu_items.insert(_menu_items.end() - 1, "Controller #" + std::to_string(_enabled_controllers));
-            _server.new_gamepad();
+    case NCKEY_ENTER:
+        if (_menu_index == 0)
+        {
+            if (_submenu_index == 0)
+            {
+                _server.add_gamepad();
+            }
+            else if (_server.count() > 0)
+            {
+                _server.remove_gamepad();
+            }
         }
         break;
     }
@@ -96,36 +103,29 @@ void GuiState::render_background()
 {
     ncplane_erase(_std_plane);
 
-    nccell ns{}, ew{}, esw{}, nes{}, swn{}, wne{};
-    nccell_load(_std_plane, &ns, "│");
-    nccell_load(_std_plane, &ew, "─");
-    nccell_load(_std_plane, &esw, "┬");
-    nccell_load(_std_plane, &nes, "├");
-    nccell_load(_std_plane, &swn, "┤");
-    nccell_load(_std_plane, &wne, "┴");
-
     unsigned int std_width{}, std_height{};
     ncplane_dim_yx(_std_plane, &std_height, &std_width);
 
     unsigned int title_height{ ncplane_dim_y(_title_plane) };
     unsigned int menu_width{ ncplane_dim_x(_menu_plane) };
 
+    nccell ns{}, ew{};
+    nccell_load(_std_plane, &ns, "│");
+    nccell_load(_std_plane, &ew, "─");
+
     ncplane_perimeter_rounded(_std_plane, 0, 0, 0);
     ncplane_cursor_move_yx(_std_plane, title_height + 1, 0);
-    ncplane_putc(_std_plane, &nes);
+    ncplane_putstr(_std_plane, "├");
     ncplane_hline(_std_plane, &ew, std_width - 2);
-    ncplane_putc(_std_plane, &swn);
+    ncplane_putstr(_std_plane, "┤");
     ncplane_cursor_move_yx(_std_plane, title_height + 1, menu_width + 1);
-    ncplane_putc(_std_plane, &esw);
+    ncplane_putstr(_std_plane, "┬");
     ncplane_cursor_move_yx(_std_plane, title_height + 2, menu_width + 1);
     ncplane_vline(_std_plane, &ns, std_height - 2);
-    ncplane_putc(_std_plane, &wne);
+    ncplane_putstr(_std_plane, "┴");
 
+    nccell_release(_std_plane, &ns);
     nccell_release(_std_plane, &ew);
-    nccell_release(_std_plane, &esw);
-    nccell_release(_std_plane, &nes);
-    nccell_release(_std_plane, &swn);
-    nccell_release(_std_plane, &wne);
 }
 
 void GuiState::render_title()
@@ -141,10 +141,19 @@ void GuiState::render_menu()
 {
     ncplane_erase(_menu_plane);
     
-    for (size_t i{ 0 }; i < _menu_items.size(); ++i)
+    for (int i{ 0 }; i <= _server.count(); ++i)
     {
         ncplane_printf_aligned(_menu_plane, i * 2 + 1, NCALIGN_LEFT, 
-            i == _menu_index ? " > %s" : "   %s", _menu_items[i].c_str());
+            " %c ", _menu_index == i ? '>' : ' ');
+
+        if (i == 0)
+        {
+            ncplane_putstr(_menu_plane, "Server Info");
+        }
+        else
+        {
+            ncplane_printf(_menu_plane, "Controller #%d", i);
+        }
     }
 }
 
@@ -154,13 +163,16 @@ void GuiState::render_info()
 
     if (_menu_index == 0)
     {
-        // placeholders
-        ncplane_printf_aligned(_info_plane, 1, NCALIGN_CENTER, "Connected: %d/%d", _connected_controllers, _enabled_controllers);
-        ncplane_printf_aligned(_info_plane, 3, NCALIGN_CENTER, "ws://255.255.255.255:8000");
-        draw_qrcode(_info_plane, 4, NCALIGN_CENTER, "FFFFFFFFFFFF");
+        ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_LEFT,
+            "    %s Add Controller", _submenu_index == 0 ? ">" : " ");
+        ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_RIGHT,
+            "%s Remove Controller    ", _submenu_index == 1 ? ">" : " ");
     }
-    else if (_menu_index == _menu_items.size() - 1)
+    else
     {
-        ncplane_printf_aligned(_info_plane, 1, NCALIGN_CENTER, "Add Controller #%d?", _enabled_controllers + 1);
+        ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_LEFT,
+            "    %s Lock Controller", _submenu_index == 0 ? ">" : " ");
+        ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_RIGHT,
+            "%s Disconnect Controller    ", _submenu_index == 1 ? ">" : " ");
     }
 }

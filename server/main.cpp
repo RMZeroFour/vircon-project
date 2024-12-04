@@ -31,11 +31,11 @@ int main(int argc, char** argv)
     notcurses* nc{ notcurses_core_init(&opts, stdout) };
 
     ServerState server{};
-
+    
     GuiState gui{ nc, server };
     gui.size_and_place();
     gui.render();
-
+    
     notcurses_render(nc);
 
     const int timeout_ms{ 250 };
@@ -62,8 +62,9 @@ int main(int argc, char** argv)
             gui.handle_input(key, input);
         }
 
+        server.update_gamepads();
+        
         gui.render();
-
         notcurses_render(nc);
     }
 

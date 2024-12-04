@@ -33,9 +33,5 @@ private:
     ncplane* _info_plane;
 
     int _menu_index;
-    int _menu_scroll;
-    std::vector<std::string> _menu_items;
-
-    int _enabled_controllers;
-    int _connected_controllers;
+    int _submenu_index;
 };
