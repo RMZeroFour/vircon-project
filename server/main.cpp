@@ -17,19 +17,8 @@ void add_milliseconds(const timespec& source, timespec& target, int delay_ms)
     target.tv_nsec %= 1'000'000'000;
 }
 
-int main(int argc, char** argv)
+void app_main(notcurses* nc)
 {
-    if (argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
-    {
-        std::cout << "vircon-server v" << VIRCON_SERVER_VERSION << " © 2024 by RMZeroFour\n";
-        return 0;
-    }
-
-    setlocale(LC_ALL, "");
-
-    notcurses_options opts{};
-    notcurses* nc{ notcurses_core_init(&opts, stdout) };
-
     ServerState server{};
     
     GuiState gui{ nc, server };
@@ -67,6 +56,24 @@ int main(int argc, char** argv)
         gui.render();
         notcurses_render(nc);
     }
+}
+
+int main(int argc, char** argv)
+{
+    if (argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
+    {
+        std::cout << "vircon-server v" << VIRCON_SERVER_VERSION << " © 2024 by RMZeroFour\n";
+        return 0;
+    }
+
+    setlocale(LC_ALL, "");
+
+    notcurses_options opts{};
+    notcurses* nc{ notcurses_core_init(&opts, stdout) };
+
+    // separate scope to ensure state is deleted before notcurses_stop
+    // else, pointers are freed twice
+    app_main(nc);
 
     notcurses_stop(nc);
 
