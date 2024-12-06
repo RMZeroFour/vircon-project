@@ -1,5 +1,7 @@
 #include "guistate.h"
 
+#include <limits>
+
 namespace
 {
 ncplane* create_plane(ncplane* parent, unsigned int rows, unsigned int cols)
@@ -22,6 +24,82 @@ void draw_qrcode(ncplane* plane, int y, ncalign_e align, const char* data)
     ncplane_mergedown_simple(qr_plane, plane);
     
     ncplane_destroy(qr_plane);
+}
+
+void draw_joystick(ncplane* plane, nccell* indicator, int y, int x, int16_t ver, int16_t hor)
+{
+    const unsigned int js_width{ 9 }, js_height{ 5 };
+    ncplane* js_plane{ create_plane(plane, js_height, js_width ) };
+
+    const int16_t threshold{ std::numeric_limits<int16_t>::max() / 3 };
+    int yoff = ver > threshold ? +1 : (ver < -threshold ? -1 : 0);
+    int xoff = hor > threshold ? +1 : (hor < -threshold ? -1 : 0);
+
+    ncplane_perimeter_rounded(js_plane, 0, 0, 0);
+    ncplane_putc_yx(js_plane, 2 + yoff, 4 + xoff * 2, indicator);
+
+    ncplane_move_yx(js_plane, y, x);
+    ncplane_mergedown_simple(js_plane, plane);
+    
+    ncplane_destroy(js_plane);
+}
+
+void draw_snapshot(ncplane* plane, int y, ncalign_e align, const Snapshot& ss)
+{
+    const unsigned int ss_width{ 36 }, ss_height{ 8 };
+    ncplane* ss_plane{ create_plane(plane, ss_height, ss_width ) };
+    
+    nccell filled{}, empty{};
+    nccell_load(ss_plane, &filled, "●");
+    nccell_load(ss_plane, &empty, "○");
+    
+    // Left side of gamepad
+    ncplane_putc_yx(ss_plane, 0, 2, ss.l1 ? &filled : &empty);
+    ncplane_printf(ss_plane, " L1");
+    ncplane_putc_yx(ss_plane, 0, 8, ss.l2 ? &filled : &empty);
+    ncplane_printf(ss_plane, " L2");
+
+    draw_joystick(ss_plane, &filled, 1, 2, ss.ly, ss.lx);
+
+    ncplane_putc_yx(ss_plane, 6, 0, ss.up ? &filled : &empty);
+    ncplane_printf(ss_plane, " Up");
+    ncplane_putc_yx(ss_plane, 7, 0, ss.down ? &filled : &empty);
+    ncplane_printf(ss_plane, " Down");
+    ncplane_putc_yx(ss_plane, 6, 7, ss.left ? &filled : &empty);
+    ncplane_printf(ss_plane, " Left");
+    ncplane_putc_yx(ss_plane, 7, 7, ss.right ? &filled : &empty);
+    ncplane_printf(ss_plane, " Right");
+    
+    // Center of gamepad
+    ncplane_putc_yx(ss_plane, 2, 14, ss.select ? &filled : &empty);
+    ncplane_printf(ss_plane, " Select");
+    ncplane_putc_yx(ss_plane, 3, 14, ss.start ? &filled : &empty);
+    ncplane_printf(ss_plane, " Start");
+
+    // Right side of gamepad
+    ncplane_putc_yx(ss_plane, 0, 24, ss.r1 ? &filled : &empty);
+    ncplane_printf(ss_plane, " R1");
+    ncplane_putc_yx(ss_plane, 0, 30, ss.r2 ? &filled : &empty);
+    ncplane_printf(ss_plane, " R2");
+
+    draw_joystick(ss_plane, &filled, 1, 24, ss.ry, ss.rx);
+
+    ncplane_putc_yx(ss_plane, 6, 24, ss.a ? &filled : &empty);
+    ncplane_printf(ss_plane, " A");
+    ncplane_putc_yx(ss_plane, 7, 24, ss.b ? &filled : &empty);
+    ncplane_printf(ss_plane, " B");
+    ncplane_putc_yx(ss_plane, 6, 31, ss.x ? &filled : &empty);
+    ncplane_printf(ss_plane, " X");
+    ncplane_putc_yx(ss_plane, 7, 31, ss.y ? &filled : &empty);            
+    ncplane_printf(ss_plane, " Y");
+
+    nccell_release(ss_plane, &filled);
+    nccell_release(ss_plane, &empty);
+
+    ncplane_move_yx(ss_plane, y, ncplane_halign(plane, align, ss_width));
+    ncplane_mergedown_simple(ss_plane, plane);
+
+    ncplane_destroy(ss_plane);
 }
 }
 
@@ -74,7 +152,7 @@ void GuiState::handle_input(char32_t key, ncinput input)
     case NCKEY_RIGHT:
         _submenu_index = 1 - _submenu_index;
         break;
-
+    
     case NCKEY_ENTER:
         if (_menu_index == 0)
         {
@@ -85,6 +163,15 @@ void GuiState::handle_input(char32_t key, ncinput input)
             else if (_server.count() > 0)
             {
                 _server.remove_gamepad();
+            }
+        }
+        else
+        {
+            int gp_index{ _menu_index - 1 };
+        
+            if (_submenu_index == 0)
+            {
+                _server.toggle_locked(gp_index);
             }
         }
         break;
@@ -170,8 +257,24 @@ void GuiState::render_info()
     }
     else
     {
+        int gp_index{ _menu_index - 1 };
+
+        if (_server.is_connected(gp_index))
+        {
+            ncplane_putstr_aligned(_info_plane, 1, NCALIGN_CENTER, 
+                _server.client_name(gp_index).c_str());
+            ncplane_putstr_aligned(_info_plane, 2, NCALIGN_CENTER, 
+                _server.is_locked(gp_index) ? "Locked" : "Unlocked");
+
+            draw_snapshot(_info_plane, 5, NCALIGN_CENTER, _server.latest_snapshot(gp_index));
+        }
+        else
+        {
+            ncplane_putstr_aligned(_info_plane, 1, NCALIGN_CENTER, "Not Connected");
+        }
+
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_LEFT,
-            "    %s Lock Controller", _submenu_index == 0 ? ">" : " ");
+            "    %s %s Controller", _submenu_index == 0 ? ">" : " ", _server.is_locked(gp_index) ? "Unlock" : "Lock");
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_RIGHT,
             "%s Disconnect Controller    ", _submenu_index == 1 ? ">" : " ");
     }
