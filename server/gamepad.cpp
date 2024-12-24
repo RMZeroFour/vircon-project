@@ -55,20 +55,20 @@ Gamepad::Gamepad()
 void Gamepad::send_input(const Snapshot& ss)
 {
     libevdev_uinput* uinput{ _input_device.get() };
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_A, ss.a ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_B, ss.b ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_X, ss.x ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_Y, ss.y ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TL, ss.l1 ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TR, ss.r1 ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TL2, ss.l2 ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TR2, ss.r2 ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_UP, ss.up ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_DOWN, ss.down ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_LEFT, ss.left ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_RIGHT, ss.right ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_SELECT, ss.select ? 1 : 0);
-    libevdev_uinput_write_event(uinput, EV_KEY, BTN_START, ss.start ? 1 : 0);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_A, ss.a);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_B, ss.b);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_X, ss.x);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_Y, ss.y);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TL, ss.l1);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TR, ss.r1);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TL2, ss.l2);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_TR2, ss.r2);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_UP, ss.up);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_DOWN, ss.down);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_LEFT, ss.left);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_DPAD_RIGHT, ss.right);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_SELECT, ss.select);
+    libevdev_uinput_write_event(uinput, EV_KEY, BTN_START, ss.start);
     libevdev_uinput_write_event(uinput, EV_ABS, ABS_X, ss.lx);
     libevdev_uinput_write_event(uinput, EV_ABS, ABS_Y, ss.ly);
     libevdev_uinput_write_event(uinput, EV_ABS, ABS_RX, ss.rx);

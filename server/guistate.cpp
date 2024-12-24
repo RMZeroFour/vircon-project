@@ -1,6 +1,9 @@
 #include "guistate.h"
 
+#include <array>
+#include <format>
 #include <limits>
+#include <sstream>
 
 namespace
 {
@@ -13,14 +16,30 @@ ncplane* create_plane(ncplane* parent, unsigned int rows, unsigned int cols)
     return ncplane_create(parent, &opts);
 }
 
-void draw_qrcode(ncplane* plane, int y, ncalign_e align, const char* data)
+std::string get_compressed_address(const std::string& host, uint16_t port)
+{
+    std::array<uint8_t, 4> host_bytes{};
+    int index{ 0 };
+    
+    std::istringstream host_parts{ host };
+    std::string part{};
+    while (std::getline(host_parts, part, '.'))
+    {
+        host_bytes[index++] = std::stoi(part);
+    }
+
+    return std::format("{:2X}{:2X}{:2X}{:2X}{:4X}", 
+        host_bytes[0], host_bytes[1], host_bytes[2], host_bytes[3], port);
+}
+
+void draw_qrcode(ncplane* plane, int y, int x, const char* data)
 {
     unsigned int qr_width{ 64 }, qr_height{ 64 };
     ncplane* qr_plane{ create_plane(plane, qr_height, qr_width ) };
 
     ncplane_qrcode(qr_plane, &qr_height, &qr_width, data, strlen(data));
 
-    ncplane_move_yx(qr_plane, y, ncplane_halign(plane, align, qr_width));
+    ncplane_move_yx(qr_plane, y, x);
     ncplane_mergedown_simple(qr_plane, plane);
     
     ncplane_destroy(qr_plane);
@@ -250,6 +269,18 @@ void GuiState::render_info()
 
     if (_menu_index == 0)
     {
+        const std::string& host{ _server.server_host() };
+        uint16_t port{ _server.server_port() };
+
+        ncplane_printf_aligned(_info_plane, 1, NCALIGN_LEFT, "    Host: %s", host.c_str());
+        ncplane_printf_aligned(_info_plane, 2, NCALIGN_LEFT, "    Port: %d", port);
+        
+        ncplane_printf_aligned(_info_plane, 4, NCALIGN_LEFT, "    Enabled: %d", _server.count());
+        ncplane_printf_aligned(_info_plane, 5, NCALIGN_LEFT, "    Connected: %d", _server.count());
+        ncplane_printf_aligned(_info_plane, 6, NCALIGN_LEFT, "    Unlocked: %d", _server.count());
+        
+        draw_qrcode(_info_plane, 1, ncplane_dim_x(_info_plane) - 29, get_compressed_address(host, port).c_str());
+
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_LEFT,
             "    %s Add Controller", _submenu_index == 0 ? ">" : " ");
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_RIGHT,

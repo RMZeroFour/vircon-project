@@ -20,6 +20,7 @@ void add_milliseconds(const timespec& source, timespec& target, int delay_ms)
 void app_main(notcurses* nc)
 {
     ServerState server{};
+    server.start_server_async();
     
     GuiState gui{ nc, server };
     gui.size_and_place();
@@ -51,11 +52,11 @@ void app_main(notcurses* nc)
             gui.handle_input(key, input);
         }
 
-        server.update_gamepads();
-        
         gui.render();
         notcurses_render(nc);
     }
+
+    server.stop_server();
 }
 
 int main(int argc, char** argv)
