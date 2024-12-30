@@ -9,7 +9,8 @@ namespace
 {
 ncplane* create_plane(ncplane* parent, unsigned int rows, unsigned int cols)
 {
-    ncplane_options opts{
+    ncplane_options opts
+    {
         .rows = rows,
         .cols = cols
     };

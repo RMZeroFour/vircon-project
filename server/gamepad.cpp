@@ -29,7 +29,8 @@ libevdev_uinput* create_gamepad_device()
     libevdev_enable_event_code(device, EV_KEY, BTN_SELECT, nullptr); // SELECT
     libevdev_enable_event_code(device, EV_KEY, BTN_START, nullptr); // START
 
-    input_absinfo axis_info{
+    input_absinfo axis_info
+    {
         .minimum = -32768,
         .maximum = 32767,
     };
