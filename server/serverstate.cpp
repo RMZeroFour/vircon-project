@@ -47,14 +47,12 @@ SocketAddress get_socket_endpoint()
 
 TCPServer create_server(const ServerSocket& socket, ServerState& server_state)
 {
-    auto factory{ new GamepadConnectionFactory{ server_state } };
-
-    auto params{ new TCPServerParams{} };
-    params->setMaxThreads(4);  
-    params->setMaxQueued(4);
-    params->setThreadIdleTime(100);
-
-    return { factory, socket, params };
+    return
+    {
+        new GamepadConnectionFactory{ server_state },
+        socket,
+        new TCPServerParams{}
+    };
 }
 }
 
