@@ -156,7 +156,7 @@ void GuiState::size_and_place()
     ncplane_move_yx(_info_plane, title_height + 2, menu_width + 2);
 }
 
-void GuiState::handle_input(char32_t key, ncinput input)
+void GuiState::handle_input(char32_t key, const ncinput* input)
 {
     switch (key)
     {
@@ -282,9 +282,9 @@ void GuiState::render_info()
         draw_qrcode(_info_plane, 1, ncplane_dim_x(_info_plane) - 29, get_compressed_address(host, port).c_str());
 
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_LEFT,
-            "    %s Add Controller", _submenu_index == 0 ? ">" : " ");
+            "    %c Add Controller", _submenu_index == 0 ? '>' : ' ');
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_RIGHT,
-            "%s Remove Controller    ", _submenu_index == 1 ? ">" : " ");
+            "%c Remove Controller    ", _submenu_index == 1 ? '>' : ' ');
     }
     else
     {
@@ -305,8 +305,8 @@ void GuiState::render_info()
         }
 
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_LEFT,
-            "    %s %s Controller", _submenu_index == 0 ? ">" : " ", _server.is_locked(gp_index) ? "Unlock" : "Lock");
+            "    %c %s Controller", _submenu_index == 0 ? '>' : ' ', _server.is_locked(gp_index) ? "Unlock" : "Lock");
         ncplane_printf_aligned(_info_plane, ncplane_dim_y(_info_plane) - 2, NCALIGN_RIGHT,
-            "%s Disconnect Controller    ", _submenu_index == 1 ? ">" : " ");
+            "%c Disconnect Controller    ", _submenu_index == 1 ? '>' : ' ');
     }
 }

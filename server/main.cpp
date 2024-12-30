@@ -49,7 +49,7 @@ void app_main(notcurses* nc)
         }
         else
         {
-            gui.handle_input(key, input);
+            gui.handle_input(key, &input);
         }
 
         gui.render();

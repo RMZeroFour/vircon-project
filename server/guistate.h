@@ -4,9 +4,6 @@
 
 #include <notcurses/notcurses.h>
 
-#include <string>
-#include <vector>
-
 class GuiState
 {
 public:
@@ -15,7 +12,7 @@ public:
 
 public:
     void size_and_place();
-    void handle_input(char32_t key, ncinput input);
+    void handle_input(char32_t key, const ncinput* input);
     void render();
 
 private:
