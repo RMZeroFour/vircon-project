@@ -1,0 +1,1 @@
+#define VIRCON_CLIENT_VERSION "@vircon_VERSION@"
