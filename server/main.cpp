@@ -42,6 +42,11 @@ void app_main(notcurses* nc)
         if (key == (char32_t)-1)
             break;
 
+        if(input.evtype == NCTYPE_RELEASE)
+        {
+            continue;
+        }
+
         if (key == NCKEY_RESIZE)
         {
             notcurses_refresh(nc, nullptr, nullptr);
