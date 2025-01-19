@@ -47,9 +47,84 @@ void app_main(notcurses* nc)
 
 int main(int argc, char** argv)
 {
-    if (argc == 2 && argv[1][0] == '-' && argv[1][1] == 'v')
+    if (argc == 2 && argv[1][0] == '-')
     {
-        std::cout << "vircon-terminal-client v" << VIRCON_CLIENT_VERSION << " © 2024 by RMZeroFour\n";
+        if (argv[1][1] == 'v')
+        {
+            std::cout << "vircon-terminal-client v" << VIRCON_CLIENT_VERSION << " © 2024 by RMZeroFour\n";
+        }
+        else if (argv[1][1] == 'a')
+        {
+            std::cout << "[Layout A Keybindings]\n";
+            std::cout << "  Q: L1\n";
+            std::cout << "  E: L2\n";
+            std::cout << "  W: Left Stick Up\n";
+            std::cout << "  A: Left Stick Left\n";
+            std::cout << "  S: Left Stick Down\n";
+            std::cout << "  D: Left Stick Right\n";
+            std::cout << "  U: R2\n";
+            std::cout << "  O: R1\n";
+            std::cout << "  I: Y\n";
+            std::cout << "  J: X\n";
+            std::cout << "  K: A\n";
+            std::cout << "  L: B\n";
+            std::cout << "  T: Start\n";
+            std::cout << "  G: Select\n";
+        }
+        else if (argv[1][1] == 'b')
+        {
+            std::cout << "[Layout B Keybindings]\n";
+            std::cout << "  Q: L1\n";
+            std::cout << "  E: L2\n";
+            std::cout << "  W: Up\n";
+            std::cout << "  A: Left\n";
+            std::cout << "  S: Down\n";
+            std::cout << "  D: Right\n";
+            std::cout << "  U: R2\n";
+            std::cout << "  O: R1\n";
+            std::cout << "  I: Right Stick Up\n";
+            std::cout << "  J: Right Stick Left\n";
+            std::cout << "  K: Right Stick Down\n";
+            std::cout << "  L: Right Stick Right\n";
+            std::cout << "  T: Start\n";
+            std::cout << "  G: Select\n";
+        }
+        else if (argv[1][1] == 'c')
+        {
+            std::cout << "[Layout C Keybindings]\n";
+            std::cout << "  Q: L1\n";
+            std::cout << "  E: L2\n";
+            std::cout << "  W: Up\n";
+            std::cout << "  A: Left\n";
+            std::cout << "  S: Down\n";
+            std::cout << "  D: Right\n";
+            std::cout << "  U: R2\n";
+            std::cout << "  O: R1\n";
+            std::cout << "  I: Y\n";
+            std::cout << "  J: X\n";
+            std::cout << "  K: A\n";
+            std::cout << "  L: B\n";
+            std::cout << "  T: Start\n";
+            std::cout << "  G: Select\n";
+        }
+        else if (argv[1][1] == 'd')
+        {
+            std::cout << "[Layout D Keybindings]\n";
+            std::cout << "  Q: L1\n";
+            std::cout << "  E: L2\n";
+            std::cout << "  W: Left Stick Up\n";
+            std::cout << "  A: Left Stick Left\n";
+            std::cout << "  S: Left Stick Down\n";
+            std::cout << "  D: Left Stick Right\n";
+            std::cout << "  U: R2\n";
+            std::cout << "  O: R1\n";
+            std::cout << "  I: Right Stick Up\n";
+            std::cout << "  J: Right Stick Left\n";
+            std::cout << "  K: Right Stick Down\n";
+            std::cout << "  L: Right Stick Right\n";
+            std::cout << "  T: Start\n";
+            std::cout << "  G: Select\n";
+        }
         return 0;
     }
 
