@@ -31,4 +31,5 @@ private:
 
     bool _in_options;
     int _menu_index;
+    int _controller_layout;
 };
