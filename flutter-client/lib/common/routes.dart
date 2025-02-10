@@ -3,11 +3,9 @@ class HomeRoute {
   static String uri() => route;
 }
 
-class ConnectRoute {
-  static const String host = 'host';
-  static const String port = 'port';
-  static const String route = '/connect/:$host/:$port';
-  static String uri(String host, String port) => '/connect/$host/:$port';
+class CouldNotConnectRoute {
+  static const String route = '/failed';
+  static String uri() => route;
 }
 
 class ControllerRoute {

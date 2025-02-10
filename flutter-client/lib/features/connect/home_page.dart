@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:beamer/beamer.dart';
 
 import 'package:vircon/common/routes.dart';
+import 'package:vircon/features/connect/connection_details_form.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -13,11 +14,22 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Home Page'),
       ),
-      body: ElevatedButton(
-        onPressed: () =>
-            context.beamToNamed(ConnectRoute.uri('192.168.0.1', '12345')),
-        child: const Text('Connect'),
+      body: ConnectionDetailsForm(
+        onConnect: (String host, int port) async {
+          final bool connected = await _tryConnect();
+          if (context.mounted) {
+            if (connected) {
+              context.beamToNamed(ControllerRoute.uri());
+            } else {
+              context.beamToNamed(CouldNotConnectRoute.uri());
+            }
+          }
+        },
       ),
     );
+  }
+
+  Future<bool> _tryConnect() async {
+    return true;
   }
 }
