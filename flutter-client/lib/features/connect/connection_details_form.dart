@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ConnectionDetailsForm extends StatefulWidget {
+  final String? initialHost;
+  final String? initialPort;
+
   final void Function(String host, int port) onConnect;
 
   const ConnectionDetailsForm({
     super.key,
+    this.initialHost,
+    this.initialPort,
     required this.onConnect,
   });
 
@@ -15,8 +20,16 @@ class ConnectionDetailsForm extends StatefulWidget {
 class ConnectionDetailsFormState extends State<ConnectionDetailsForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _hostController = TextEditingController();
-  final TextEditingController _portController = TextEditingController();
+  late final TextEditingController _hostController;
+  late final TextEditingController _portController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _hostController = TextEditingController(text: widget.initialHost);
+    _portController = TextEditingController(text: widget.initialPort);
+  }
 
   @override
   void dispose() {

@@ -6,7 +6,10 @@ import 'package:vircon/common/routes.dart';
 import 'package:vircon/features/connect/connection_details_form.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final String? host;
+  final String? port;
+
+  const HomePage({super.key, this.host, this.port});
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +18,8 @@ class HomePage extends StatelessWidget {
         title: const Text('Home Page'),
       ),
       body: ConnectionDetailsForm(
+        initialHost: host,
+        initialPort: port,
         onConnect: (String host, int port) async {
           final bool connected = await _tryConnect();
           if (context.mounted) {

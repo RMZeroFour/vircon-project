@@ -13,7 +13,12 @@ class MainApp extends StatelessWidget {
   final _routerDelegate = BeamerDelegate(
     locationBuilder: RoutesLocationBuilder(
       routes: {
-        HomeRoute.route: (context, state, data) => HomePage(),
+        HomeRoute.route: (context, state, data) {
+          return HomePage(
+            host: state.queryParameters[HomeRoute.host],
+            port: state.queryParameters[HomeRoute.port],
+          );
+        },
         CouldNotConnectRoute.route: (context, state, data) =>
             CouldNotConnectPage(),
         ControllerRoute.route: (context, state, data) => ControllerPage()
